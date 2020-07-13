@@ -90,4 +90,6 @@ module.exports.loop = function () {
        Game.spawns[spawnName].spawnMinCreeps();
     }
 
+    Game.spawns.Spawn1.overlay();
+
 };

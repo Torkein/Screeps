@@ -202,7 +202,7 @@ StructureSpawn.prototype.whereCanIBuild = function() {
     this.memory.extensionCords = bldExtenCords;
 
 
-
+    var visualOverlay = []
 
     // Utilize Visual for testing
     for (c = 0 ; c < buildMatrix.length; c++){
@@ -211,6 +211,7 @@ StructureSpawn.prototype.whereCanIBuild = function() {
                 new RoomVisual(this.room.name).text("T", buildMatrix[c][r].pos(), {color: 'green', font: 0.8});
             } else if (buildMatrix[c][r].isReserved() == true) {
                 new RoomVisual(this.room.name).text("R", buildMatrix[c][r].pos(), {color: 'blue', font: 0.8});
+                visualOverlay.push(buildMatrix[c][r].pos());
             } else {
                 new RoomVisual(this.room.name).text("F", buildMatrix[c][r].pos(), {color: 'red', font: 0.8});
             }
@@ -218,7 +219,16 @@ StructureSpawn.prototype.whereCanIBuild = function() {
     }
 
     new RoomVisual(this.room.name).text('S', storageCords, {color: 'green', font: 0.8});
+    visualOverlay.push(storageCords);
+    this.memory.overlay = visualOverlay;
     
+};
+
+StructureSpawn.prototype.overlay = function(){
+    let visOverlay = this.memory.overlay;
+    for (vis of visOverlay){
+        new RoomVisual(this.room.name).text("R", vis, {color: 'blue', font: 0.8});
+    }
 };
 
 
@@ -406,7 +416,7 @@ StructureSpawn.prototype.buildStorage = function(){
 StructureSpawn.prototype.phaseBuild = function(){
     if (this.room.find(FIND_CONSTRUCTION_SITES).length == 0){
         if (this.memory.phase === 0) {
-            if (this.room.controller.level >=2) {
+            if (this.room.controller.level >=2 && this.memory.numExtRooms >= 2) {
                 if (this.room.energyCapacityAvailable > 500){
                     this.bldMiningContainers();
                     this.memory.phase = 1;
