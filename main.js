@@ -1,4 +1,3 @@
-//require ('prototype_spawn')();
 require ('prototype.spawn');
 require ('prototype.creep');
 var roleHarvest = require('role_harvest');

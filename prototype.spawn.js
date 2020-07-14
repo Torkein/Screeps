@@ -46,6 +46,8 @@ StructureSpawn.prototype.setMemory = function () {
         this.memory.numTank = this.memory.numMiners;
         this.memory.numRec = 1;
         this.memory.numGather = 1;
+        this.memory.bldArray = []
+        this.memory.mstBldArray = [];
     }
 
 }
@@ -226,14 +228,17 @@ StructureSpawn.prototype.whereCanIBuild = function() {
 
 StructureSpawn.prototype.overlay = function(){
     let visOverlay = this.memory.overlay;
-    for (vis of visOverlay){
-        new RoomVisual(this.room.name).text("R", vis, {color: 'blue', font: 0.8});
+    if (visOverlay != undefined) {
+        for (vis of visOverlay) {
+            new RoomVisual(this.room.name).text("R", vis, {color: 'blue', font: 0.8});
+        }
     }
 };
 
 
 StructureSpawn.prototype.initRoad = function () {
     const sources = this.memory.roomSources;
+    let buildArray = this.memory.bldArray;
 
 
     for (source of sources) {
@@ -241,7 +246,8 @@ StructureSpawn.prototype.initRoad = function () {
         for (part of path) {
             let buildRoad = new RoomPosition(part.x, part.y, (this.room.name));
             if ((buildRoad.x == source.pos.x && buildRoad.y == source.pos.y) == false) {
-                buildRoad.createConstructionSite(STRUCTURE_ROAD);
+                // buildRoad.createConstructionSite(STRUCTURE_ROAD);  // Removing while testing build array
+                buildArray.push({type:STRUCTURE_ROAD, pos:{x: part.x, y: part.y}});
             }
 
         }
@@ -251,7 +257,8 @@ StructureSpawn.prototype.initRoad = function () {
     for (part of path) {
         let buildRoad = new RoomPosition(part.x, part.y, (this.room.name));
         if ((buildRoad.x == this.room.controller.pos.x && buildRoad.y == this.room.controller.pos.y) == false) {
-            buildRoad.createConstructionSite(STRUCTURE_ROAD);
+            // buildRoad.createConstructionSite(STRUCTURE_ROAD); // Removing while testing build Array
+            buildArray.push({type:STRUCTURE_ROAD, pos:{x: part.x, y: part.y}});
         }
     }
 
@@ -260,13 +267,18 @@ StructureSpawn.prototype.initRoad = function () {
     for (let tgt of targets){
         if(tgt.terrain != 'wall'){
             let buildRoad = new RoomPosition(tgt.x, tgt.y, (this.room.name));
-            buildRoad.createConstructionSite(STRUCTURE_ROAD);
+            // buildRoad.createConstructionSite(STRUCTURE_ROAD); // Removing while testing build array
+            buildArray.push({type:STRUCTURE_ROAD, pos:{x: tgt.x, y: tgt.y}});
         }
     }
+
+    this.memory.bldArray = buildArray;
 
 };
 
 StructureSpawn.prototype.buildTest = function () {
+    let buildArray = this.memory.bldArray;
+
     if (this.memory.roomSources != undefined){
         var numOfSources = this.room.find(FIND_SOURCES);
 
@@ -281,11 +293,14 @@ StructureSpawn.prototype.buildTest = function () {
                     }
                 }
                 let build = this.pos.findClosestByPath(possibleConstructionSites);
-                build.createConstructionSite(STRUCTURE_CONTAINER);
+                buildArray.push({type:STRUCTURE_CONTAINER, pos:{x: build.x, y: build.y}});
+                // build.createConstructionSite(STRUCTURE_CONTAINER); // REmvoing while testing build array
 
             }
         }
     }
+
+    this.memory.bldArray = buildArray;
 };
 
 StructureSpawn.prototype.storageTest = function(roomMatrix) {
@@ -333,18 +348,33 @@ StructureSpawn.prototype.storageTest = function(roomMatrix) {
 StructureSpawn.prototype.bldExtRoom = function() {
 
     function build(object, bRoom){
-        object.room.createConstructionSite(bRoom.x -1, bRoom.y -1, STRUCTURE_EXTENSION);
-        object.room.createConstructionSite(bRoom.x , bRoom.y -1, STRUCTURE_ROAD);
-        object.room.createConstructionSite(bRoom.x +1 , bRoom.y -1, STRUCTURE_EXTENSION);
+        let buildArray = this.memory.bldArray;
+        buildArray.push({type:STRUCTURE_EXTENSION, pos:{x: bRoom.x -1, y: bRoom.y -1}});
+        buildArray.push({type:STRUCTURE_ROAD, pos:{x: bRoom.x, y: bRoom.y -1}});
+        buildArray.push({type:STRUCTURE_EXTENSION, pos:{x: bRoom.x +1, y: bRoom.y -1}});
 
-        object.room.createConstructionSite(bRoom.x -1, bRoom.y, STRUCTURE_ROAD);
-        object.room.createConstructionSite(bRoom.x, bRoom.y, STRUCTURE_EXTENSION);
-        object.room.createConstructionSite(bRoom.x +1 , bRoom.y, STRUCTURE_ROAD);
+        buildArray.push({type:STRUCTURE_ROAD, pos:{x: bRoom.x -1, y: bRoom.y}});
+        buildArray.push({type:STRUCTURE_EXTENSION, pos:{x: bRoom.x, y: bRoom.y}});
+        buildArray.push({type:STRUCTURE_ROAD, pos:{x: bRoom.x +1, y: bRoom.y}});
 
-        object.room.createConstructionSite(bRoom.x -1, bRoom.y +1, STRUCTURE_EXTENSION);
-        object.room.createConstructionSite(bRoom.x, bRoom.y +1 , STRUCTURE_ROAD);
-        object.room.createConstructionSite(bRoom.x +1, bRoom.y +1 , STRUCTURE_EXTENSION);
+        buildArray.push({type:STRUCTURE_EXTENSION, pos:{x: bRoom.x -1, y: bRoom.y +1}});
+        buildArray.push({type:STRUCTURE_ROAD, pos:{x: bRoom.x, y: bRoom.y +1}});
+        buildArray.push({type:STRUCTURE_EXTENSION, pos:{x: bRoom.x +1, y: bRoom.y +1}});
 
+
+        // object.room.createConstructionSite(bRoom.x -1, bRoom.y -1, STRUCTURE_EXTENSION);
+        // object.room.createConstructionSite(bRoom.x , bRoom.y -1, STRUCTURE_ROAD);
+        // object.room.createConstructionSite(bRoom.x +1 , bRoom.y -1, STRUCTURE_EXTENSION);
+
+        // object.room.createConstructionSite(bRoom.x -1, bRoom.y, STRUCTURE_ROAD);
+        // object.room.createConstructionSite(bRoom.x, bRoom.y, STRUCTURE_EXTENSION);
+        // object.room.createConstructionSite(bRoom.x +1 , bRoom.y, STRUCTURE_ROAD);
+
+        // object.room.createConstructionSite(bRoom.x -1, bRoom.y +1, STRUCTURE_EXTENSION);
+        // object.room.createConstructionSite(bRoom.x, bRoom.y +1 , STRUCTURE_ROAD);
+        // object.room.createConstructionSite(bRoom.x +1, bRoom.y +1 , STRUCTURE_EXTENSION);
+
+        this.memory.bldArray = buildArray;
     };
 
     if (this.memory.numExtRooms == undefined){
@@ -353,7 +383,7 @@ StructureSpawn.prototype.bldExtRoom = function() {
     } else if (this.memory.numExtRooms === 0 && this.room.controller.level >= 2){
         build(this, this.memory.extensionCords.shift());
         this.memory.numExtRooms = 1;
-    } else if (this.memory.numExtRooms === 1 && this.room.controller.level >= 3 && this.memory.phase > 0) {
+    } else if (this.memory.numExtRooms === 1 && this.room.controller.level >= 3 && this.memory.phase >= 0) {
         build(this, this.memory.extensionCords.shift());
         this.memory.numExtRooms = 2;
     } else if (this.memory.numExtRooms === 2 && this.room.controller.level >= 3 && this.memory.phase > 1) {
@@ -367,16 +397,20 @@ StructureSpawn.prototype.bldExtRoom = function() {
 
 StructureSpawn.prototype.bldMiningContainers = function(){
     let sources = this.memory.bldContain;
+    let buildArray = this.memory.bldArray;
     for (let source of sources){
-        this.room.createConstructionSite(source.x,source.y,STRUCTURE_CONTAINER);
+        // this.room.createConstructionSite(source.x,source.y,STRUCTURE_CONTAINER); // Build Array Testing
+        buildArray.push({type:STRUCTURE_CONTAINER, pos:{x: source.x, y: source.y}});
     }
 
+    this.memory.bldArray = buildArray;
 };
 
 StructureSpawn.prototype.buildStorage = function(){
-    // Build Construct Storage
-    let bStorage = new RoomPosition(this.memory.bldStorage.x, this.memory.bldStorage.y, this.memory.bldStorage.roomName);
-    bStorage.createConstructionSite(STRUCTURE_STORAGE);
+    let buildArray = this.memory.bldArray;
+    // Build Construct Storage Commited out for array test and moved to end.
+    // let bStorage = new RoomPosition(this.memory.bldStorage.x, this.memory.bldStorage.y, this.memory.bldStorage.roomName);
+    // bStorage.createConstructionSite(STRUCTURE_STORAGE);
 
     // Build roads around Storage
     // Build roads to Storage.
@@ -388,7 +422,8 @@ StructureSpawn.prototype.buildStorage = function(){
         for (part of path) {
             let buildRoad = new RoomPosition(part.x, part.y, (this.room.name));
             if ((buildRoad.x == source.pos.x && buildRoad.y == source.pos.y) == false) {
-                buildRoad.createConstructionSite(STRUCTURE_ROAD);
+                // buildRoad.createConstructionSite(STRUCTURE_ROAD); // Array Test
+                buildArray.push({type:STRUCTURE_ROAD, pos:{x: part.x, y: part.y}});
             }
         }
     }
@@ -396,17 +431,22 @@ StructureSpawn.prototype.buildStorage = function(){
     let path = this.room.findPath(this.pos, bStorage, {ignoreCreeps: true, ignoreRoads: true});
     for (part of path) {
         let buildRoad = new RoomPosition(part.x, part.y, (this.room.name));
-        buildRoad.createConstructionSite(STRUCTURE_ROAD);
+        // buildRoad.createConstructionSite(STRUCTURE_ROAD); // Array Test
+        buildArray.push({type:STRUCTURE_ROAD, pos:{x: part.x, y: part.y}});
     }
 
     let targets = (this.room.lookForAtArea((LOOK_TERRAIN),(bStorage.y)-1, (bStorage.x) -1, (bStorage.y) +1, (bStorage.x) +1, true));
     for (let tgt of targets){
         if(tgt.terrain != 'wall'){
             let buildRoad = new RoomPosition(tgt.x, tgt.y, (this.room.name));
-            buildRoad.createConstructionSite(STRUCTURE_ROAD);
+            // buildRoad.createConstructionSite(STRUCTURE_ROAD); // Array test
+            buildArray.push({type:STRUCTURE_ROAD, pos:{x: tgt.x, y: tgt.y}});
         }
     }
 
+    buildArray.push({type:STRUCTURE_STORAGE, pos:{x: this.memory.bldStorage.x, y: this.memory.bldStorage.y}});
+
+    this.memory.bldArray = buildArray;
 
 };
 
@@ -414,7 +454,12 @@ StructureSpawn.prototype.buildStorage = function(){
 
 
 StructureSpawn.prototype.phaseBuild = function(){
-    if (this.room.find(FIND_CONSTRUCTION_SITES).length == 0){
+    let buildArray = this.memory.bldArray;
+    if (buildArray == undefined){
+        buildArray = [];
+    }
+
+    if (this.room.find(FIND_CONSTRUCTION_SITES).length == 0 && buildArray.length == 0){
         if (this.memory.phase === 0) {
             if (this.room.controller.level >=2 && this.memory.numExtRooms >= 2) {
                 if (this.room.energyCapacityAvailable > 500){
@@ -431,9 +476,12 @@ StructureSpawn.prototype.phaseBuild = function(){
         this.bldExtRoom();
 
     }
-    else {
-    //    console.log(this.room.find(FIND_CONSTRUCTION_SITES).length);
+    else if (this.room.find(FIND_CONSTRUCTION_SITES).length == 0 && buildArray.length > 0){
+        let buildObject = buildArray.pop();
+        this.room.createConstructionSite(buildObject.pos.x, buildObject.pos.y, buildObject.type);
     }
+
+    this.memory.bldArray = buildArray;
 
 };
 
