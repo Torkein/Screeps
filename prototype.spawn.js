@@ -348,7 +348,11 @@ StructureSpawn.prototype.storageTest = function(roomMatrix) {
 StructureSpawn.prototype.bldExtRoom = function() {
 
     function build(object, bRoom){
-        let buildArray = this.memory.bldArray;
+        let buildArray = object.memory.bldArray;
+        if (bRoom == undefined){
+            return;
+        }
+
         buildArray.push({type:STRUCTURE_EXTENSION, pos:{x: bRoom.x -1, y: bRoom.y -1}});
         buildArray.push({type:STRUCTURE_ROAD, pos:{x: bRoom.x, y: bRoom.y -1}});
         buildArray.push({type:STRUCTURE_EXTENSION, pos:{x: bRoom.x +1, y: bRoom.y -1}});
