@@ -33,26 +33,31 @@ function getSquare(roomTer, x, y) {
 
 StructureSpawn.prototype.setMemory = function () {
 
-    if (this.memory.phase == undefined) {
+    // This needs to be updated to utilize Room memory instead of spawn memory.
+    // Otherwise this will create an issue where each spawn will attempt to have it's own memory variables.
+    
+    if (this.room.memory.phase == undefined) {
         var sources = this.room.find(FIND_SOURCES);
-        this.memory.phase = 0;
-        this.memory.roomSources = sources;
-        this.memory.numMiners = sources.length;
-        this.memory.numUpgrade = this.memory.numMiners;
-        this.memory.numBuild = this.memory.numMiners;
-        this.memory.numRepair = this.memory.numMiners;
-        this.memory.numLogi = this.memory.numMiners * 2;
-        this.memory.numHarvest = this.memory.numMiners;
-        this.memory.numTank = this.memory.numMiners;
-        this.memory.numRec = 1;
-        this.memory.numGather = 1;
-        this.memory.bldArray = []
-        this.memory.mstBldArray = [];
+        this.room.memory.phase = 0;
+        this.room.memory.roomSources = sources;
+        this.room.memory.numMiners = sources.length;
+        this.room.memory.numUpgrade = this.room.memory.numMiners;
+        this.room.memory.numBuild = this.room.memory.numMiners;
+        this.room.memory.numRepair = this.room.memory.numMiners;
+        this.room.memory.numLogi = this.room.memory.numMiners * 2;
+        this.room.memory.numHarvest = this.room.memory.numMiners;
+        this.room.memory.numTank = this.room.memory.numMiners;
+        this.room.memory.numRec = 1;
+        this.room.memory.numGather = 1;
+        this.room.memory.bldArray = []
+        this.room.memory.mstBldArray = [];
+        this.room.memory.abadWork = [];
     }
-
 }
 
-
+// whereCanIBuild()
+// This function is responsible for finding future build locations.
+// Determines locations of the 3x3 room gird
 StructureSpawn.prototype.whereCanIBuild = function() {
     // Based on spawn location what is the lowest X and Y value for building 3x3 squares
     var lowX = this.pos.x % 3;
@@ -90,7 +95,7 @@ StructureSpawn.prototype.whereCanIBuild = function() {
     // ************************ //
 
     // Init vars for Storage
-    var numOfSources = this.memory.roomSources;
+    var numOfSources = this.room.memory.roomSources;
     var storageCords = undefined;
     var tgtX = this.pos.x;
     var tgtY = this.pos.y;
@@ -133,7 +138,7 @@ StructureSpawn.prototype.whereCanIBuild = function() {
         }
     }
     // Pass storage build location to memory.
-    this.memory.bldStorage = storageCords;
+    this.room.memory.bldStorage = storageCords;
 
     // ************************ //
     // Mark Container Locations //
@@ -149,7 +154,7 @@ StructureSpawn.prototype.whereCanIBuild = function() {
     }
 
     // array containing cords for container builds.
-    this.memory.bldContain = bldContain;
+    this.room.memory.bldContain = bldContain;
 
     // Reserve locations for  containers
     for (container of bldContain) {
@@ -168,7 +173,7 @@ StructureSpawn.prototype.whereCanIBuild = function() {
                 surroundRooms.push(buildMatrix[c][r]);
         }
     }
-    this.memory.surRooms = surroundRooms; */
+    this.room.memory.surRooms = surroundRooms; */
 
     // Claming room for extensions.
     var bldExtenCords = [];
@@ -201,7 +206,7 @@ StructureSpawn.prototype.whereCanIBuild = function() {
         offsetValue++;
     }
     console.log(bldExtenCords.length);
-    this.memory.extensionCords = bldExtenCords;
+    this.room.memory.extensionCords = bldExtenCords;
 
 
     var visualOverlay = []
@@ -222,12 +227,12 @@ StructureSpawn.prototype.whereCanIBuild = function() {
 
     new RoomVisual(this.room.name).text('S', storageCords, {color: 'green', font: 0.8});
     visualOverlay.push(storageCords);
-    this.memory.overlay = visualOverlay;
+    this.room.memory.overlay = visualOverlay;
     
 };
 
 StructureSpawn.prototype.overlay = function(){
-    let visOverlay = this.memory.overlay;
+    let visOverlay = this.room.memory.overlay;
     if (visOverlay != undefined) {
         for (vis of visOverlay) {
             new RoomVisual(this.room.name).text("R", vis, {color: 'blue', font: 0.8});
@@ -237,8 +242,8 @@ StructureSpawn.prototype.overlay = function(){
 
 
 StructureSpawn.prototype.initRoad = function () {
-    const sources = this.memory.roomSources;
-    let buildArray = this.memory.bldArray;
+    const sources = this.room.memory.roomSources;
+    let buildArray = this.room.memory.bldArray;
 
 
     for (source of sources) {
@@ -272,14 +277,14 @@ StructureSpawn.prototype.initRoad = function () {
         }
     }
 
-    this.memory.bldArray = buildArray;
+    this.room.memory.bldArray = buildArray;
 
 };
 
 StructureSpawn.prototype.buildTest = function () {
-    let buildArray = this.memory.bldArray;
+    let buildArray = this.room.memory.bldArray;
 
-    if (this.memory.roomSources != undefined){
+    if (this.room.memory.roomSources != undefined){
         var numOfSources = this.room.find(FIND_SOURCES);
 
         for (let source of numOfSources){
@@ -300,11 +305,11 @@ StructureSpawn.prototype.buildTest = function () {
         }
     }
 
-    this.memory.bldArray = buildArray;
+    this.room.memory.bldArray = buildArray;
 };
 
 StructureSpawn.prototype.storageTest = function(roomMatrix) {
-  var numOfSources = this.memory.roomSources;
+  var numOfSources = this.room.memory.roomSources;
   var storageCords = undefined;
   var tgtX = this.pos.x;
   var tgtY = this.pos.y;
@@ -340,7 +345,7 @@ StructureSpawn.prototype.storageTest = function(roomMatrix) {
 
   }
 
-  // this.memory.buildStorageCords = storageCords;
+  // this.room.memory.buildStorageCords = storageCords;
   return storageCords;
 
 };
@@ -378,48 +383,48 @@ StructureSpawn.prototype.bldExtRoom = function() {
         // object.room.createConstructionSite(bRoom.x, bRoom.y +1 , STRUCTURE_ROAD);
         // object.room.createConstructionSite(bRoom.x +1, bRoom.y +1 , STRUCTURE_EXTENSION);
 
-        this.memory.bldArray = buildArray;
+        this.room.memory.bldArray = buildArray;
     };
 
-    if (this.memory.numExtRooms == undefined){
-        this.memory.numExtRooms = 0;
+    if (this.room.memory.numExtRooms == undefined){
+        this.room.memory.numExtRooms = 0;
 
-    } else if (this.memory.numExtRooms === 0 && this.room.controller.level >= 2){
-        build(this, this.memory.extensionCords.shift());
-        this.memory.numExtRooms = 1;
-    } else if (this.memory.numExtRooms === 1 && this.room.controller.level >= 3 && this.memory.phase >= 0) {
-        build(this, this.memory.extensionCords.shift());
-        this.memory.numExtRooms = 2;
-    } else if (this.memory.numExtRooms === 2 && this.room.controller.level >= 3 && this.memory.phase > 1) {
-        build(this, this.memory.extensionCords.shift());
-        build(this, this.memory.extensionCords.shift());
-        this.memory.numExtRooms = 4;
+    } else if (this.room.memory.numExtRooms === 0 && this.room.controller.level >= 2){
+        build(this, this.room.memory.extensionCords.shift());
+        this.room.memory.numExtRooms = 1;
+    } else if (this.room.memory.numExtRooms === 1 && this.room.controller.level >= 3 && this.room.memory.phase >= 0) {
+        build(this, this.room.memory.extensionCords.shift());
+        this.room.memory.numExtRooms = 2;
+    } else if (this.room.memory.numExtRooms === 2 && this.room.controller.level >= 3 && this.room.memory.phase > 1) {
+        build(this, this.room.memory.extensionCords.shift());
+        build(this, this.room.memory.extensionCords.shift());
+        this.room.memory.numExtRooms = 4;
     }
 
 
 };
 
 StructureSpawn.prototype.bldMiningContainers = function(){
-    let sources = this.memory.bldContain;
-    let buildArray = this.memory.bldArray;
+    let sources = this.room.memory.bldContain;
+    let buildArray = this.room.memory.bldArray;
     for (let source of sources){
         // this.room.createConstructionSite(source.x,source.y,STRUCTURE_CONTAINER); // Build Array Testing
         buildArray.push({type:STRUCTURE_CONTAINER, pos:{x: source.x, y: source.y}});
     }
 
-    this.memory.bldArray = buildArray;
+    this.room.memory.bldArray = buildArray;
 };
 
 StructureSpawn.prototype.buildStorage = function(){
-    let buildArray = this.memory.bldArray;
+    let buildArray = this.room.memory.bldArray;
     // Build Construct Storage Commited out for array test and moved to end.
-    // let bStorage = new RoomPosition(this.memory.bldStorage.x, this.memory.bldStorage.y, this.memory.bldStorage.roomName);
+    let bStorage = new RoomPosition(this.room.memory.bldStorage.x, this.room.memory.bldStorage.y, this.room.memory.bldStorage.roomName);
     // bStorage.createConstructionSite(STRUCTURE_STORAGE);
 
     // Build roads around Storage
     // Build roads to Storage.
 
-    const sources = this.memory.roomSources;
+    const sources = this.room.memory.roomSources;
 
     for (source of sources) {
         let path = this.room.findPath(bStorage, source.pos, {ignoreCreeps: true, ignoreRoads:true});
@@ -448,9 +453,9 @@ StructureSpawn.prototype.buildStorage = function(){
         }
     }
 
-    buildArray.push({type:STRUCTURE_STORAGE, pos:{x: this.memory.bldStorage.x, y: this.memory.bldStorage.y}});
+    buildArray.push({type:STRUCTURE_STORAGE, pos:{x: this.room.memory.bldStorage.x, y: this.room.memory.bldStorage.y}});
 
-    this.memory.bldArray = buildArray;
+    this.room.memory.bldArray = buildArray;
 
 };
 
@@ -458,23 +463,23 @@ StructureSpawn.prototype.buildStorage = function(){
 
 
 StructureSpawn.prototype.phaseBuild = function(){
-    let buildArray = this.memory.bldArray;
+    let buildArray = this.room.memory.bldArray;
     if (buildArray == undefined){
         buildArray = [];
     }
 
     if (this.room.find(FIND_CONSTRUCTION_SITES).length == 0 && buildArray.length == 0){
-        if (this.memory.phase === 0) {
-            if (this.room.controller.level >=2 && this.memory.numExtRooms >= 2) {
+        if (this.room.memory.phase === 0) {
+            if (this.room.controller.level >=2 && this.room.memory.numExtRooms >= 2) {
                 if (this.room.energyCapacityAvailable > 500){
                     this.bldMiningContainers();
-                    this.memory.phase = 1;
+                    this.room.memory.phase = 1;
                 }
             }
-        } else if(this.memory.phase === 1) {
+        } else if(this.room.memory.phase === 1) {
             if (this.room.controller.level >= 4) {
                 this.buildStorage();
-                this.memory.phase = 2;
+                this.room.memory.phase = 2;
             }
         }
         this.bldExtRoom();
@@ -485,16 +490,18 @@ StructureSpawn.prototype.phaseBuild = function(){
         this.room.createConstructionSite(buildObject.pos.x, buildObject.pos.y, buildObject.type);
     }
 
-    this.memory.bldArray = buildArray;
+    this.room.memory.bldArray = buildArray;
 
 };
 
+// Resets Phase to undefined.. currently used for just testing... may be required in the future for recovering after
+// being attacked.
 StructureSpawn.prototype.resetPhase = function() {
-    this.memory.phase = undefined;
+    this.room.memory.phase = undefined;
 }
 
 StructureSpawn.prototype.spawnMinCreeps = function () {
-    if (this.memory.phase == undefined){
+    if (this.room.memory.phase == undefined){
         this.setMemory();
         this.whereCanIBuild();
         this.initRoad();
@@ -522,75 +529,75 @@ StructureSpawn.prototype.spawnMinCreeps = function () {
         this.balancedCreep(200, 'harvest');
     }
 
-    if (this.memory.phase == 0){
+    if (this.room.memory.phase == 0){
         maxEnergy = 300;
         // Produce harvesters, builders, repair, upgrade, gather
-        if (numCreeps['harvest'] < this.memory.numHarvest){
+        if (numCreeps['harvest'] < this.room.memory.numHarvest){
             // Make Harvest
             this.balancedCreep(maxEnergy, 'harvest');
-        } else if (numCreeps['upgrade'] < this.memory.numUpgrade){
+        } else if (numCreeps['upgrade'] < this.room.memory.numUpgrade){
             // make upgrader
             this.balancedCreep(maxEnergy, 'upgrade');
 
-        } else if (numCreeps['build'] < this.memory.numBuild){
+        } else if (numCreeps['build'] < this.room.memory.numBuild){
             // Make Build
             this.balancedCreep(maxEnergy, 'build');
 
-        } else if (numCreeps['repair'] < this.memory.numRepair){
+        } else if (numCreeps['repair'] < this.room.memory.numRepair){
             // Make Repair
 
             this.balancedCreep(maxEnergy, 'repair');
-        } else if (numCreeps['gather'] < this.memory.numGather){
+        } else if (numCreeps['gather'] < this.room.memory.numGather){
             // make grather
             this.createCart(2);
 
         }
 
-    } else if (this.memory.phase == 1){
+    } else if (this.room.memory.phase == 1){
         maxEnergy = 600;
         // Produce harvesters, builders, repair, upgrade, gather, miner
-        if (numCreeps['miner'] < this.memory.numMiners){
+        if (numCreeps['miner'] < this.room.memory.numMiners){
             // Make Miner
             this.createMiner();
-        } else if (numCreeps['harvest'] < this.memory.numHarvest){
+        } else if (numCreeps['harvest'] < this.room.memory.numHarvest){
             // Make Harvest
             this.balancedCreep(maxEnergy, 'harvest');
-        } else if (numCreeps['upgrade'] < this.memory.numUpgrade){
+        } else if (numCreeps['upgrade'] < this.room.memory.numUpgrade){
             // make upgrader
             this.balancedCreep(maxEnergy, 'upgrade');
-        } else if (numCreeps['build'] < this.memory.numBuild){
+        } else if (numCreeps['build'] < this.room.memory.numBuild){
             // Make Build
             this.balancedCreep(maxEnergy, 'build');
-        } else if (numCreeps['repair'] < this.memory.numRepair){
+        } else if (numCreeps['repair'] < this.room.memory.numRepair){
             // Make Repair
             this.balancedCreep(maxEnergy, 'repair');
-        } else if (numCreeps['gather'] < this.memory.numGather){
+        } else if (numCreeps['gather'] < this.room.memory.numGather){
             // make grather
             this.createCart(2);
         }
 
-    } else if (this.memory.phase == 2){
+    } else if (this.room.memory.phase == 2){
         maxEnergy = 600;
         // produce harvesters, builders, repair, upgrade, gather, miner, logi
-        if (numCreeps['miner'] < this.memory.numMiners){
+        if (numCreeps['miner'] < this.room.memory.numMiners){
             // Make Miner
             this.createMiner();
-        } else if (numCreeps['logi'] < this.memory.numLogi) {
+        } else if (numCreeps['logi'] < this.room.memory.numLogi) {
             // Make Harvest
             this.createLogi(2);
-        } else if (numCreeps['harvest'] < this.memory.numHarvest){
+        } else if (numCreeps['harvest'] < this.room.memory.numHarvest){
             // Make Harvest
             this.balancedCreep(maxEnergy, 'harvest');
-        } else if (numCreeps['upgrade'] < this.memory.numUpgrade){
+        } else if (numCreeps['upgrade'] < this.room.memory.numUpgrade){
             // make upgrader
             this.balancedCreep(maxEnergy, 'upgrade');
-        } else if (numCreeps['build'] < this.memory.numBuild){
+        } else if (numCreeps['build'] < this.room.memory.numBuild){
             // Make Build
             this.balancedCreep(maxEnergy, 'build');
-        } else if (numCreeps['repair'] < this.memory.numRepair){
+        } else if (numCreeps['repair'] < this.room.memory.numRepair){
             // Make Repair
             this.balancedCreep(maxEnergy, 'repair');
-        } else if (numCreeps['gather'] < this.memory.numGather){
+        } else if (numCreeps['gather'] < this.room.memory.numGather){
             // make grather
             this.createCart(2);
         }
@@ -643,7 +650,7 @@ StructureSpawn.prototype.createMiner =
         body.push(MOVE);
 
         let creepsInRoom = this.room.find(FIND_MY_CREEPS);
-        let sources = this.memory.roomSources;
+        let sources = this.room.memory.roomSources;
 
         for (let source of sources){
             if (_.sum(creepsInRoom, (c) => (c.memory.src_container == source.id && c.memory.role == 'miner')) == 0){
@@ -656,7 +663,7 @@ StructureSpawn.prototype.createMiner =
 
 
         return this.createCreep(body, undefined,
-            {role: 'miner', working: false, src_container: sourceID, conCords: this.memory.bldContain});
+            {role: 'miner', working: false, src_container: sourceID, conCords: this.room.memory.bldContain});
     };
 
 StructureSpawn.prototype.createLogi =
@@ -670,7 +677,7 @@ StructureSpawn.prototype.createLogi =
         }
 
         let creepsInRoom = this.room.find(FIND_MY_CREEPS);
-        let sources = this.memory.bldContain;
+        let sources = this.room.memory.bldContain;
         let containers = [];
 
         for(let source of sources){
@@ -801,6 +808,7 @@ StructureSpawn.prototype.createDriller =
 
     };
 
+// Will Kill all creeps Not just this room.
 StructureSpawn.prototype.killAll = function (){
     for (let name in Game.creeps) {
         Game.creeps[name].suicide();
