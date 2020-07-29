@@ -3,6 +3,15 @@ var roleUpgrade = require('role_upgrade');
 module.exports = {
     run: function(creep)
     {
+
+        // Checks if this is the end, if it is dump work into abandon'd que
+        if (creep.ticksToLive == 1){
+            let remainingWork = creep.room.memory.abadWork;
+            remainingWork.push(creep.memory.workSite);
+            creep.room.memory.abadWork = remainingWork;
+            return; // Stops worker from working on last tick, Ment to reduce CPU cost by limiting memory usage
+        }
+
         // Code that will send building to work in another room, other than the one spawned.
         if (creep.room.name != creep.memory.target && creep.memory.target != undefined){
                 var exit = creep.room.findExitTo(creep.memory.target);
@@ -21,31 +30,65 @@ module.exports = {
         // Lets get to works!
         if (creep.memory.working == true) {
 
-            var constructionSite = undefined;
+            var constructionSite = undefined;  // Start with no site
             // Do I currently have a job?
+            // Did I make a Site last ticket:  Required because of construction sites are done at the end of a tick.
+            if (creep.memory.constCords != undefined){
+                let site = creep.memory.constCords;
+                let workSite = creep.room.lookForAt(LOOK_CONSTRUCTION_SITES, site.x, site.y);
+                if (workSite[0] != undefined){
+                    creep.memory.workSite = workSite[0].id;
+                }
+                creep.memory.constCords = undefined;
+            }
+
             if (creep.memory.workSite != undefined) {
                 // Do your Job
-                construcitonSite = Game.getObjectById(creep.memory.workSite);
+                constructionSite = Game.getObjectById(creep.memory.workSite);
+
             }
+
             // I don't have work now;
             else {
                 let remainingWork = creep.room.memory.abadWork;
                 let newWork = creep.room.memory.bldArray;
+                let masterWork = creep.room.memory.mstBldArray;
 
                 console.log(remainingWork);
                 if (remainingWork.length > 0){
+                    let workSite = remainingWork.pop();
+                    creep.memory.workSite = workSite;
+                    constructionSite = Game.getObjectById(workSite);
+                    creep.room.memory.abadWork = remainingWork;
 
-                    console.log('There is work left on the table');
+
                 } else if (newWork.length > 0){
                     console.log('Gotta get a new job');
+                    let buildObject = newWork.pop();
+                    masterWork.push({type: buildObject.type, pos: {x: buildObject.x, y:buildObject.y} });
+                    let site = new RoomPosition(buildObject.pos.x, buildObject.pos.y, creep.room.name);
+                    site.createConstructionSite(buildObject.type);
+                    creep.memory.constCords = site;
+                    creep.room.memory.bldArray = newWork;
+                    creep.room.memory.mstBldArray = masterWork;
+
+
                 }
+
                 else {
-                    console.log('There might be work left)');
-                    constructionSite = creep.pos.findClosestByPath(FIND_CONSTRUCTION_SITES);
+                    if (Game.time % 5 == 0) {
+                        console.log('There might be work left');
+                        constructionSite = creep.pos.findClosestByPath(FIND_CONSTRUCTION_SITES);
+                    }
 
                 }
 
 
+            }
+
+            if(constructionSite == undefined && creep.memory.workSite != undefined)
+            {
+                creep.memory.workSite = undefined;
             }
 
             if (constructionSite != undefined) {

@@ -358,6 +358,11 @@ StructureSpawn.prototype.bldExtRoom = function() {
             return;
         }
 
+        if (buildArray == undefined){
+            buildArray = [];
+        }
+
+
         buildArray.push({type:STRUCTURE_EXTENSION, pos:{x: bRoom.x -1, y: bRoom.y -1}});
         buildArray.push({type:STRUCTURE_ROAD, pos:{x: bRoom.x, y: bRoom.y -1}});
         buildArray.push({type:STRUCTURE_EXTENSION, pos:{x: bRoom.x +1, y: bRoom.y -1}});
@@ -485,10 +490,6 @@ StructureSpawn.prototype.phaseBuild = function(){
         this.bldExtRoom();
 
     }
-    else if (this.room.find(FIND_CONSTRUCTION_SITES).length == 0 && buildArray.length > 0){
-        let buildObject = buildArray.pop();
-        this.room.createConstructionSite(buildObject.pos.x, buildObject.pos.y, buildObject.type);
-    }
 
     this.room.memory.bldArray = buildArray;
 
@@ -526,7 +527,8 @@ StructureSpawn.prototype.spawnMinCreeps = function () {
 
     // Emergancy energy is out.
     if (numCreeps['harvest'] == 0 && numCreeps['miner'] == 0 && numCreeps['logi'] == 0){
-        this.balancedCreep(200, 'harvest');
+        this.balancedCreep(200, 'harvest'); // Changed to test out building queue
+        // this.balancedCreep(200, 'build');  // Used for testing, to force creep spawn types
     }
 
     if (this.room.memory.phase == 0){
@@ -535,6 +537,8 @@ StructureSpawn.prototype.spawnMinCreeps = function () {
         if (numCreeps['harvest'] < this.room.memory.numHarvest){
             // Make Harvest
             this.balancedCreep(maxEnergy, 'harvest');
+            // this.balancedCreep(maxEnergy, 'build'); // used for testing to force creep spawn types
+
         } else if (numCreeps['upgrade'] < this.room.memory.numUpgrade){
             // make upgrader
             this.balancedCreep(maxEnergy, 'upgrade');
@@ -813,4 +817,12 @@ StructureSpawn.prototype.killAll = function (){
     for (let name in Game.creeps) {
         Game.creeps[name].suicide();
     }
+
+    for (let site in Game.constructionSites){
+        Game.constructionSites[site].remove();
+    }
+
+    delete Memory.creeps;
+    delete Memory.rooms;
+
 };

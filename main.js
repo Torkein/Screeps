@@ -15,6 +15,9 @@ var roleClaim = require('role_claim');
 
 module.exports.loop = function () {
 
+    if (Memory.flag == false){
+        return;
+    }
     for (let name in Memory.creeps) {
 
         // and checking if the creep is still alive
