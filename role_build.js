@@ -48,13 +48,14 @@ module.exports = {
 
             }
 
-            // I don't have work now;
+            // I don't have any work
+
             else {
+                // Grab arrays for memory for updating ( don't know if you can push / pop directly from memory..
                 let remainingWork = creep.room.memory.abadWork;
                 let newWork = creep.room.memory.bldArray;
                 let masterWork = creep.room.memory.mstBldArray;
 
-                console.log(remainingWork);
                 if (remainingWork.length > 0){
                     let workSite = remainingWork.pop();
                     creep.memory.workSite = workSite;
@@ -63,7 +64,6 @@ module.exports = {
 
 
                 } else if (newWork.length > 0){
-                    console.log('Gotta get a new job');
                     let buildObject = newWork.pop();
                     masterWork.push({type: buildObject.type, pos: {x: buildObject.x, y:buildObject.y} });
                     let site = new RoomPosition(buildObject.pos.x, buildObject.pos.y, creep.room.name);
@@ -76,11 +76,7 @@ module.exports = {
                 }
 
                 else {
-                    if (Game.time % 5 == 0) {
-                        console.log('There might be work left');
-                        constructionSite = creep.pos.findClosestByPath(FIND_CONSTRUCTION_SITES);
-                    }
-
+                    constructionSite = creep.pos.findClosestByPath(FIND_CONSTRUCTION_SITES);
                 }
 
 

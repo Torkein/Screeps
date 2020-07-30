@@ -20,7 +20,16 @@ module.exports = {
                 }
             }
             else {
-                roleBuild.run(creep);
+                // Become old style builder, assist with builds, but never grab your own.
+                constructionSite = creep.pos.findClosestByPath(FIND_CONSTRUCTION_SITES);
+                if (constructionSite != undefined) {
+
+                    if (creep.build(constructionSite) == ERR_NOT_IN_RANGE) {
+                        creep.moveTo(constructionSite);
+                    }
+                } else {
+                    roleUpgrade.run(creep);
+                }
             }
         }
         else {
