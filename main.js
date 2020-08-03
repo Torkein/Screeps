@@ -1,5 +1,6 @@
 require ('prototype.spawn');
 require ('prototype.creep');
+require ('prototype.room');
 var roleHarvest = require('role_harvest');
 var roleUpgrade = require('role_upgrade');
 var roleBuild = require('role_build');
@@ -38,6 +39,10 @@ module.exports.loop = function () {
   //  if (linkFrom.store.getFreeCapacity(RESOURCE_ENERGY) == 0 && linkFrom.cooldown == 0){
  //       linkFrom.transferEnergy(linkTo);
  //   }
+
+    for (let room in Game.rooms){
+        Game.rooms[room].run();
+    }
 
 
     for (let name in Game.creeps) {
@@ -89,9 +94,13 @@ module.exports.loop = function () {
     }
 
     for (let spawnName in Game.spawns) {
-       Game.spawns[spawnName].spawnMinCreeps();
+
+        Game.spawns[spawnName].run();
     }
 
-    Game.spawns.Spawn1.overlay();
+    //var stringified = JSON.stringify(Memory);
+    //var startCpu = Game.cpu.getUsed();
+    //JSON.parse(stringified);
+    //console.log('CPU spent on Memory parsing:', Game.cpu.getUsed() - startCpu);
 
 };
