@@ -12,13 +12,16 @@ var roleTank = require('role_tank');
 var roleDriller = require('role_rangedriller');
 //var roleLink = require('role_linkers');
 var roleClaim = require('role_claim');
+var roleRecover = require('role_recover');
 
 
 module.exports.loop = function () {
-
     if (Memory.flag == false){
         return;
     }
+
+
+
     for (let name in Memory.creeps) {
 
         // and checking if the creep is still alive
@@ -40,8 +43,11 @@ module.exports.loop = function () {
  //       linkFrom.transferEnergy(linkTo);
  //   }
 
+
     for (let room in Game.rooms){
+        //let startCpu = Game.cpu.getUsed();
         Game.rooms[room].run();
+        //console.log('CPU spent on Room Management:', Game.cpu.getUsed() - startCpu);
     }
 
 
@@ -55,7 +61,9 @@ module.exports.loop = function () {
             roleUpgrade.run(creep);
         }
         else if (creep.memory.role == 'build') {
+
             roleBuild.run(creep);
+
         }
         else if (creep.memory.role == 'repair'){
             roleRepair.run(creep);
@@ -80,6 +88,9 @@ module.exports.loop = function () {
  //       }
         else if (creep.memory.role == 'claim'){
             roleClaim.run(creep);
+        }
+        else if (creep.memory.role == 'recover'){
+            roleRecover.run(creep);
         }
 
 

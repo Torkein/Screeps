@@ -37,21 +37,11 @@ Room.prototype.initMemory = function(){
         var sources = this.find(FIND_SOURCES);
         this.memory.phase = 0;
         this.memory.roomSources = sources;
-        this.memory.numMiners = 0;
-        this.memory.numUpgrade = 2;
-        this.memory.numBuild = 2;
-        this.memory.numRepair = 2;
-        this.memory.numLogi = 0;
-        this.memory.numHarvest = 2;
-        this.memory.numTank = 0;
-        this.memory.numRec = 0;
-        this.memory.numGather = 0;
         this.memory.bldArray = []
         this.memory.mstBldArray = [];
         this.memory.abadWork = [];
         this.memory.swnArray = [];
         this.memory.primeSpawn = undefined;
-        this.memory.recover = false;
     }
 
 };
@@ -83,8 +73,8 @@ Room.prototype.initRoad = function () {
         }
     }
 
-    // Build 2x road loop around spawn.
-    let targets = (this.lookForAtArea((LOOK_TERRAIN),(pSpawn.pos.y)-2, (pSpawn.pos.x) -2, (pSpawn.pos.y) +2, (pSpawn.pos.x) +2, true));
+    // Build 1x road loop around spawn.
+    let targets = (this.lookForAtArea((LOOK_TERRAIN),(pSpawn.pos.y)-1, (pSpawn.pos.x) -1, (pSpawn.pos.y) +1, (pSpawn.pos.x) +1, true));
     for (let tgt of targets){
         if(tgt.terrain != 'wall'){
             buildArray.push({type:STRUCTURE_ROAD, pos:{x: tgt.x, y: tgt.y}});
@@ -95,6 +85,8 @@ Room.prototype.initRoad = function () {
 
 };
 
+/*
+comment out prior to removal
 Room.prototype.phaseBuild = function(){
     let buildArray = this.memory.bldArray;
     if (buildArray == undefined){
@@ -120,6 +112,149 @@ Room.prototype.phaseBuild = function(){
     }
 
     this.memory.bldArray = buildArray;
+
+};
+ */
+
+Room.prototype.phaseUpdate = function(){
+    if (this.memory.phase != this.controller.level && this.controller.my){
+        this.phaseCreepUpdate();
+        this.phaseBuildingUpdate();
+        this.memory.phase = this.controller.level;
+    }
+};
+
+
+Room.prototype.phaseBuildingUpdate = function(){
+
+    let buildArray = this.memory.bldArray;
+    if (buildArray == undefined){
+        buildArray = [];
+    }
+
+    switch(this.controller.level){
+
+        case 0:
+            // Room with out claimed controller
+            // Can make roads and Containers
+            break;
+        case 1:
+            // Inital Spawn / Claimed room
+            // Make spawn if one is not present.
+            // Also Roads / Containers
+            break;
+        case 2:
+            // One Extention room
+            this.bldExtRoom();
+            this.bldMiningContainers(); // Might as well start the miners now..
+            // Walls and Ramparts open up
+            break;
+        case 3:
+            // 1 Extension rooms
+            this.bldExtRoom();
+            // 1st Tower
+            break;
+        case 4:
+            // 2 Extension rooms
+            this.buildStorage();
+            this.bldExtRoom();
+            this.bldExtRoom();
+            // Storage
+            break;
+        case 5:
+            // 2 Extension rooms
+            this.bldExtRoom();
+            this.bldExtRoom();
+            // 1 additional tower
+            // 2 Links
+            break;
+        case 6:
+            // 2 Extension rooms
+            this.bldExtRoom();
+            this.bldExtRoom();
+            // 1 Additional link
+            // Extractor
+            // 3 Labs
+            // Terminal
+            break;
+        case 7:
+            // 2 Extensions
+            this.bldExtRoom();
+            this.bldExtRoom();
+            // 1 Additional link
+            // 3 labs
+            // Factory
+            // 1 more spawn
+            // 1 More tower
+            break;
+        case 8:
+            // 2 Extensinos
+            this.bldExtRoom();
+            this.bldExtRoom();
+            // 2 Links
+            // 3 Towers
+            // 4 Labs
+            // Observer, Power Spawn, Nuke
+            break;
+    }
+
+    this.memory.bldArray = buildArray;
+
+};
+
+Room.prototype.phaseCreepUpdate = function(){
+
+    switch(this.controller.level){
+
+        case 0:
+            // Empty room case
+            this.memory.numMiners = 0;
+            this.memory.numUpgrade = 0;
+            this.memory.numBuild = 0;
+            this.memory.numRepair = 0;
+            this.memory.numLogi = 0;
+            this.memory.numHarvest = 0;
+            this.memory.numTank = 0;
+            this.memory.numRec = 0;
+            this.memory.numGather = 0;
+            break;
+        case 1:
+            // Inital Room Spawn
+            //this.memory.numMiners = 0;
+            this.memory.numUpgrade = 2;
+            this.memory.numBuild = 2;
+            this.memory.numRepair = 2;
+            //this.memory.numLogi = 0;
+            this.memory.numHarvest = 2;
+            //this.memory.numTank = 0;
+            //this.memory.numRec = 0;
+            //this.memory.numGather = 0;
+            break;
+        case 2:
+            // Still inital spawn (walls can be built maybe wall builders are needed...
+            break;
+        case 3:
+            // Enough Max energy to build proper miners..
+            // Towers Introduced
+            this.memory.numMiners = this.memory.roomSources.length;
+            break;
+        case 4:
+            // Storage is introduced
+            this.memory.numLogi = this.memory.numMiners * 2;
+            break;
+        case 5:
+            // Links introduced
+            break;
+        case 6:
+            // Extractos, Labs
+            break;
+        case 7:
+            // Factories & Additional Spawns
+            break;
+        case 8:
+            // Observer, Power Spawn, Nuke
+            break;
+    }
 
 };
 
@@ -206,6 +341,7 @@ Room.prototype.buildStorage = function(){
     for (source of sources) {
         let path = this.findPath(bStorage, source.pos, {ignoreCreeps: true, ignoreRoads:true});
         for (part of path) {
+
             let buildRoad = new RoomPosition(part.x, part.y, (this.name));
             if ((buildRoad.x == source.pos.x && buildRoad.y == source.pos.y) == false) {
                 buildArray.push({type:STRUCTURE_ROAD, pos:{x: part.x, y: part.y}});
@@ -215,7 +351,7 @@ Room.prototype.buildStorage = function(){
 
     let path = this.findPath(pSpawn.pos, bStorage, {ignoreCreeps: true, ignoreRoads: true});
     for (part of path) {
-        let buildRoad = new RoomPosition(part.x, part.y, (this.room.name));
+        let buildRoad = new RoomPosition(part.x, part.y, (this.name));
         buildArray.push({type:STRUCTURE_ROAD, pos:{x: part.x, y: part.y}});
     }
 
@@ -245,7 +381,7 @@ Room.prototype.run = function(){
         console.log('CPU spent on Planning:', Game.cpu.getUsed() - startCpu);
     }
 
-    this.phaseBuild();
+    this.phaseUpdate();
     this.fillSpawnQueue();
     this.overlay();
 };
@@ -261,10 +397,12 @@ Room.prototype.fillSpawnQueue = function(){
     let creepsInRoom = this.find(FIND_MY_CREEPS);
 
     /** @type {Object.<string, nunber>} */
+    // IDENTIFIED CPU SINK HERE (uses about 1 cpu per tick)
     let numCreeps = {};
     for (let role of roleTypes){
         numCreeps[role] = _.sum(creepsInRoom, (c) => c.memory.role == role);
     }
+    // END OF CPU ISSUE.
 
     // Baseline Queue fill
     if (spawnArray.length == 0){
@@ -311,11 +449,12 @@ Room.prototype.fillSpawnQueue = function(){
     }
 
         // Panic Add
-     if (this.energyCapacityAvailable <= 300 && numCreeps['miner'] == 0 && numCreeps['harvester'] == 0 && numCreeps['logi'] == 0) {
-            // Create spawn panic guy.
-         this.memory.recover = true;
-         spawnArray.push('recover');
-     }
+    if (this.energyAvailable > 301 && numCreeps['miner'] == 0
+        && numCreeps['harvest'] == 0 && numCreeps['logi'] == 0 && numCreeps['recover'] == 0) {
+        // Create spawn panic guy.
+        spawnArray.push('recover');
+    }
+
 
      this.memory.swnArray = spawnArray;
 

@@ -14,7 +14,8 @@ StructureSpawn.prototype.spawn = function(){
     let maxEnergy = this.room.energyCapacityAvailable;
     if (spawnArray.length > 0 && this.spawning == null &&
         (this.room.energyAvailable == this.room.energyCapacityAvailable
-            || (this.room.energyAvailable > 200 && this.room.memory.recover == true))) {
+            || (spawnArray[spawnArray.length-1] == 'recover' && this.room.energyAvailable > 200)
+            || (spawnArray[spawnArray.length-1] == 'miner' && this.room.energyAvailable >= 500))) {
 
         let creep = spawnArray.pop();
 
