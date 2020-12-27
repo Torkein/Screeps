@@ -16,6 +16,7 @@ var roleRecover = require('role_recover');
 
 
 module.exports.loop = function () {
+
     if (Memory.flag == false){
         return;
     }
@@ -47,11 +48,13 @@ module.exports.loop = function () {
     for (let room in Game.rooms){
         //let startCpu = Game.cpu.getUsed();
         Game.rooms[room].run();
+        //let startCpu = Game.cpu.getUsed();
         //console.log('CPU spent on Room Management:', Game.cpu.getUsed() - startCpu);
     }
 
-
+    var creepCount = 0;
     for (let name in Game.creeps) {
+        creepCount ++;
         var creep = Game.creeps[name];
         creep.say(creep.memory.role);
         if (creep.memory.role == 'harvest') {
@@ -96,6 +99,9 @@ module.exports.loop = function () {
 
     }
 
+    // Will be corrected with add / Death counters, currently hard coded
+    Game.rooms['W6N1'].memory.creepct = creepCount;
+
     var towers = _.filter(Game.structures, s => s.structureType == STRUCTURE_TOWER);
     for (let tower of towers) {
         var tgt = tower.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
@@ -108,6 +114,8 @@ module.exports.loop = function () {
 
         Game.spawns[spawnName].run();
     }
+
+    //roomPlanner();
 
     //var stringified = JSON.stringify(Memory);
     //var startCpu = Game.cpu.getUsed();

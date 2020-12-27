@@ -1,3 +1,4 @@
+require ('roomPlanner');
 var roleTypes = ['miner', 'upgrade', 'build', 'repair', 'logi', 'harvest', 'tank', 'lrecv', 'gather', 'recover'];
 
 function BuildableCell(buildible, roomobj){
@@ -42,6 +43,8 @@ Room.prototype.initMemory = function(){
         this.memory.abadWork = [];
         this.memory.swnArray = [];
         this.memory.primeSpawn = undefined;
+        this.memory.bldTower = [];
+        this.memory.bldLab = [];
     }
 
 };
@@ -152,6 +155,7 @@ Room.prototype.phaseBuildingUpdate = function(){
         case 3:
             // 1 Extension rooms
             this.bldExtRoom();
+            this.buildTower(1);
             // 1st Tower
             break;
         case 4:
@@ -165,6 +169,7 @@ Room.prototype.phaseBuildingUpdate = function(){
             // 2 Extension rooms
             this.bldExtRoom();
             this.bldExtRoom();
+            this.buildTower(2);
             // 1 additional tower
             // 2 Links
             break;
@@ -181,6 +186,7 @@ Room.prototype.phaseBuildingUpdate = function(){
             // 2 Extensions
             this.bldExtRoom();
             this.bldExtRoom();
+            this.buildTower(3);
             // 1 Additional link
             // 3 labs
             // Factory
@@ -191,6 +197,9 @@ Room.prototype.phaseBuildingUpdate = function(){
             // 2 Extensinos
             this.bldExtRoom();
             this.bldExtRoom();
+            this.buildTower(4);
+            this.buildTower(5);
+            this.buildTower(6);
             // 2 Links
             // 3 Towers
             // 4 Labs
@@ -237,6 +246,7 @@ Room.prototype.phaseCreepUpdate = function(){
             // Enough Max energy to build proper miners..
             // Towers Introduced
             this.memory.numMiners = this.memory.roomSources.length;
+            this.memory.numTank = 1;
             break;
         case 4:
             // Storage is introduced
@@ -250,6 +260,7 @@ Room.prototype.phaseCreepUpdate = function(){
             break;
         case 7:
             // Factories & Additional Spawns
+            this.memory.numTank = 2;
             break;
         case 8:
             // Observer, Power Spawn, Nuke
@@ -258,62 +269,85 @@ Room.prototype.phaseCreepUpdate = function(){
 
 };
 
-Room.prototype.bldExtRoom = function() {
+Room.prototype.buildTower = function(towerNumber) {
+    let buildArray = this.memory.bldArray;
+    let towerRoom = this.memory.bldTower;
 
-    function build(object, bRoom){
-        let buildArray = object.memory.bldArray;
-        if (bRoom == undefined){
-            return;
-        }
+    switch(towerNumber){
 
-        if (buildArray == undefined){
-            buildArray = [];
-        }
+        case 1:
+            buildArray.push({type:STRUCTURE_ROAD, pos:{x: towerRoom[0].x -1, y: towerRoom[0].y -1}});
+            buildArray.push({type:STRUCTURE_TOWER, pos:{x: towerRoom[0].x, y: towerRoom[0].y -1}});
+            buildArray.push({type:STRUCTURE_ROAD, pos:{x: towerRoom[0].x +1, y: towerRoom[0].y -1}});
 
-
-        buildArray.push({type:STRUCTURE_EXTENSION, pos:{x: bRoom.x -1, y: bRoom.y -1}});
-        buildArray.push({type:STRUCTURE_ROAD, pos:{x: bRoom.x, y: bRoom.y -1}});
-        buildArray.push({type:STRUCTURE_EXTENSION, pos:{x: bRoom.x +1, y: bRoom.y -1}});
-
-        buildArray.push({type:STRUCTURE_ROAD, pos:{x: bRoom.x -1, y: bRoom.y}});
-        buildArray.push({type:STRUCTURE_EXTENSION, pos:{x: bRoom.x, y: bRoom.y}});
-        buildArray.push({type:STRUCTURE_ROAD, pos:{x: bRoom.x +1, y: bRoom.y}});
-
-        buildArray.push({type:STRUCTURE_EXTENSION, pos:{x: bRoom.x -1, y: bRoom.y +1}});
-        buildArray.push({type:STRUCTURE_ROAD, pos:{x: bRoom.x, y: bRoom.y +1}});
-        buildArray.push({type:STRUCTURE_EXTENSION, pos:{x: bRoom.x +1, y: bRoom.y +1}});
+            buildArray.push({type:STRUCTURE_ROAD, pos:{x: towerRoom[0].x -1, y: towerRoom[0].y}});
+            buildArray.push({type:STRUCTURE_ROAD, pos:{x: towerRoom[0].x, y: towerRoom[0].y}});
+            buildArray.push({type:STRUCTURE_ROAD, pos:{x: towerRoom[0].x +1, y: towerRoom[0].y}});
 
 
-        // object.room.createConstructionSite(bRoom.x -1, bRoom.y -1, STRUCTURE_EXTENSION);
-        // object.room.createConstructionSite(bRoom.x , bRoom.y -1, STRUCTURE_ROAD);
-        // object.room.createConstructionSite(bRoom.x +1 , bRoom.y -1, STRUCTURE_EXTENSION);
+            buildArray.push({type:STRUCTURE_ROAD, pos:{x: towerRoom[0].x, y: towerRoom[0].y +1}});
 
-        // object.room.createConstructionSite(bRoom.x -1, bRoom.y, STRUCTURE_ROAD);
-        // object.room.createConstructionSite(bRoom.x, bRoom.y, STRUCTURE_EXTENSION);
-        // object.room.createConstructionSite(bRoom.x +1 , bRoom.y, STRUCTURE_ROAD);
 
-        // object.room.createConstructionSite(bRoom.x -1, bRoom.y +1, STRUCTURE_EXTENSION);
-        // object.room.createConstructionSite(bRoom.x, bRoom.y +1 , STRUCTURE_ROAD);
-        // object.room.createConstructionSite(bRoom.x +1, bRoom.y +1 , STRUCTURE_EXTENSION);
+            break;
+        case 2:
+            buildArray.push({type:STRUCTURE_ROAD, pos:{x: towerRoom[1].x -1, y: towerRoom[1].y -1}});
+            buildArray.push({type:STRUCTURE_TOWER, pos:{x: towerRoom[1].x, y: towerRoom[1].y -1}});
+            buildArray.push({type:STRUCTURE_ROAD, pos:{x: towerRoom[1].x +1, y: towerRoom[1].y -1}});
 
-        object.memory.bldArray = buildArray;
-    };
+            buildArray.push({type:STRUCTURE_ROAD, pos:{x: towerRoom[1].x -1, y: towerRoom[1].y}});
+            buildArray.push({type:STRUCTURE_ROAD, pos:{x: towerRoom[1].x, y: towerRoom[1].y}});
+            buildArray.push({type:STRUCTURE_ROAD, pos:{x: towerRoom[1].x +1, y: towerRoom[1].y}});
 
-    if (this.memory.numExtRooms == undefined){
-        this.memory.numExtRooms = 0;
 
-    } else if (this.memory.numExtRooms === 0 && this.controller.level >= 2){
-        build(this, this.memory.extensionCords.shift());
-        this.memory.numExtRooms = 1;
-    } else if (this.memory.numExtRooms === 1 && this.controller.level >= 3 && this.memory.phase >= 0) {
-        build(this, this.memory.extensionCords.shift());
-        this.memory.numExtRooms = 2;
-    } else if (this.memory.numExtRooms === 2 && this.controller.level >= 3 && this.memory.phase > 1) {
-        build(this, this.memory.extensionCords.shift());
-        build(this, this.memory.extensionCords.shift());
-        this.memory.numExtRooms = 4;
+            buildArray.push({type:STRUCTURE_ROAD, pos:{x: towerRoom[1].x, y: towerRoom[1].y +1}});
+
+            break;
+        case 3:
+            buildArray.push({type:STRUCTURE_TOWER, pos:{x: towerRoom[0].x -1, y: towerRoom[0].y +1}});
+            break;
+        case 4:
+            buildArray.push({type:STRUCTURE_TOWER, pos:{x: towerRoom[1].x -1, y: towerRoom[1].y +1}});
+            break;
+        case 5:
+            buildArray.push({type:STRUCTURE_TOWER, pos:{x: towerRoom[0].x +1, y: towerRoom[0].y +1}});
+            break;
+        case 6:
+            buildArray.push({type:STRUCTURE_TOWER, pos:{x: towerRoom[1].x +1, y: towerRoom[1].y +1}});
+            break;
     }
 
+    this.memory.bldArray = buildArray;
+
+};
+
+Room.prototype.bldExtRoom = function() {
+
+    let buildArray = this.memory.bldArray;
+    if (this.memory.extensionCords == undefined){
+        return;
+    }
+    let bRoom = this.memory.extensionCords.shift();
+    if (bRoom == undefined){
+        return;
+    }
+
+    if (buildArray == undefined){
+        buildArray = [];
+    }
+
+    buildArray.push({type:STRUCTURE_EXTENSION, pos:{x: bRoom.x -1, y: bRoom.y -1}});
+    buildArray.push({type:STRUCTURE_ROAD, pos:{x: bRoom.x, y: bRoom.y -1}});
+    buildArray.push({type:STRUCTURE_EXTENSION, pos:{x: bRoom.x +1, y: bRoom.y -1}});
+
+    buildArray.push({type:STRUCTURE_ROAD, pos:{x: bRoom.x -1, y: bRoom.y}});
+    buildArray.push({type:STRUCTURE_EXTENSION, pos:{x: bRoom.x, y: bRoom.y}});
+    buildArray.push({type:STRUCTURE_ROAD, pos:{x: bRoom.x +1, y: bRoom.y}});
+
+    buildArray.push({type:STRUCTURE_EXTENSION, pos:{x: bRoom.x -1, y: bRoom.y +1}});
+    buildArray.push({type:STRUCTURE_ROAD, pos:{x: bRoom.x, y: bRoom.y +1}});
+    buildArray.push({type:STRUCTURE_EXTENSION, pos:{x: bRoom.x +1, y: bRoom.y +1}});
+
+    this.memory.bldArray = buildArray;
 
 };
 
@@ -383,7 +417,10 @@ Room.prototype.run = function(){
 
     this.phaseUpdate();
     this.fillSpawnQueue();
-    this.overlay();
+    // this.overlay();
+    // startCpu = Game.cpu.getUsed();
+    this.planner();
+    //console.log('CPU spent on Planner:', Game.cpu.getUsed() - startCpu);
 };
 
 Room.prototype.fillSpawnQueue = function(){
@@ -439,7 +476,7 @@ Room.prototype.fillSpawnQueue = function(){
 
 
     // Special Case adds.
-    if (spawnArray.length == 0) {
+    if (spawnArray.length == 0 && this.memory.creepct < 16) {
         // Add in repair room creep before standard build.
         if (this.memory.bldArray.length > 0 && numCreeps['build'] < 6) {
             spawnArray.push('build');
@@ -449,8 +486,8 @@ Room.prototype.fillSpawnQueue = function(){
     }
 
         // Panic Add
-    if (this.energyAvailable > 301 && numCreeps['miner'] == 0
-        && numCreeps['harvest'] == 0 && numCreeps['logi'] == 0 && numCreeps['recover'] == 0) {
+    if ((this.energyAvailable > 301 && numCreeps['miner'] == 0
+        && numCreeps['harvest'] == 0 && numCreeps['logi'] == 0 && numCreeps['recover'] == 0) && spawnArray[spawnArray.length -1] != 'recover') {
         // Create spawn panic guy.
         spawnArray.push('recover');
     }
@@ -545,7 +582,7 @@ Room.prototype.whereCanIBuild = function() {
                 for (r = tgtX - passCount ; r <= tgtX - passCount ; r ++){
                     if (buildMatrix[r][c].canBuild() == true && buildMatrix[r][c].isReserved() == false) {
                         storageCords = new RoomPosition(buildMatrix[r][c].pos().x,buildMatrix[r][c].pos().y, this.name);
-                        buildMatrix[tgtY][tgtX].reserved = true;
+                        buildMatrix[r][c].reserved = true;
                         break;
                     }
                 }
@@ -556,13 +593,46 @@ Room.prototype.whereCanIBuild = function() {
     // Pass storage build location to memory.
     this.memory.bldStorage = storageCords;
 
+    //Tower Rooms ( Right now 2 rooms ) Starting 1/2 way between Spawn & Storage
+    var towerCords = []
+    let towerX = _.floor(((storageCords.x + baseSpawn.pos.x) / 2)/ 3);
+    let towerY = _.floor(((storageCords.y + baseSpawn.pos.y) / 2) /3);
+
+
+    while (towerCords.length < 2){
+
+        if (buildMatrix[towerY][towerX].canBuild() == true && buildMatrix[towerY][towerX].isReserved() == false){
+
+            towerCords.push(this.getPositionAt(buildMatrix[towerY][towerX].pos().x,buildMatrix[towerY][towerX].pos().y));
+            buildMatrix[towerY][towerX].reserved = true;
+
+        } else {
+            let passCount = 1;
+            while (towerCords.length < 2){
+                for (c = towerY - passCount; c <= towerY + passCount ; c ++){
+                    for (r = towerX - passCount ; r <= towerX - passCount ; r ++){
+                        if (buildMatrix[r][c].canBuild() == true && buildMatrix[r][c].isReserved() == false) {
+                            towerCords.push(this.getPositionAt(buildMatrix[r][c].pos().x,buildMatrix[r][c].pos().y));
+                            buildMatrix[r][c].reserved = true;
+                            break;
+                        }
+                    }
+                }
+                passCount++;
+            }
+        }
+    }
+
+    this.memory.bldTower = towerCords;
+
+
+
     // ************************ //
     // Mark Container Locations //
     //    and save locations    //
     // ************************ //
 
     // Future to do,  remove lookForAt and utilize the build room, cut down on CPU usage.
-
     var bldContain = [];
     for (let source of numOfSources){
         let path = this.findPath(baseSpawn.pos, new RoomPosition( source.pos.x, source.pos.y, this.name), {ignoreCreeps: true});
@@ -577,6 +647,18 @@ Room.prototype.whereCanIBuild = function() {
         buildMatrix[_.floor(container.y / 3)][_.floor(container.x / 3)].reserved = true;
     }
 
+
+
+    /*for (let source of numOfSources){
+        let path = this.findPath(this.getPositionAt(storageCords.x,storageCords.y), this.getPositionAt(source.pos.x, source.pos.y), {ignoreCreeps:true});
+        for (let tile of path){
+            buildMatrix[_.floor(tile.y / 3)][_.floor(tile.x / 3)].reserved = true;
+            new RoomVisual(this.name).text('D', _.floor(tile.x / 3),_.floor(tile.y / 3) );
+        }
+
+    }/*
+
+    // Make Reservations for pathing from Storage to Spawn, Storage to Controler, Storage to sources.
 
 
     // Make Reservations for rooms directly around spawns (may considering using this space for higher level stuff...

@@ -1,3 +1,4 @@
+require ('roomPlanner');
 var roleTypes = ['miner', 'upgrade', 'build', 'repair', 'logi', 'harvest', 'tank', 'lrecv', 'gather', 'recover'];
 
 // Main run process
